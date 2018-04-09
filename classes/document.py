@@ -1,5 +1,6 @@
 import json
 import io
+import os
 
 class Document:
     """
@@ -10,10 +11,25 @@ class Document:
         except NameError:
             to_unicode = str
 
-        attributes['documentName'] = name
-        filename = '../storage/' + name + '.json'
+        if not os.path.exists('../storage/'):
+            os.makedirs('../storage/')
 
-        with io.open(filename, 'w', encoding='utf8') as outfile:
-            str_ = json.dumps(attributes, indent=4, sort_keys=True,
+        attributes['documentName'] = name
+
+        self.name = name
+        self.filename = '../storage/' + name + '.json'
+        self.attributes = attributes
+        self.write()
+
+
+    def write(self):
+        with io.open(self.filename, 'w', encoding='utf8') as outfile:
+            str_ = json.dumps(self.attributes, indent=4, sort_keys=True,
                 separators=(',', ': '), ensure_ascii=False)
             outfile.write(to_unicode(str_))
+
+    def update(self, changes):
+        for key, value in changes.items():
+            self.attributes[key] = value
+        self.write()
+
