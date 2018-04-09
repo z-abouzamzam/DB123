@@ -6,13 +6,6 @@ class Document:
     """
     """
     def __init__(self, name, attributes={}):
-        try:
-            to_unicode = unicode
-        except NameError:
-            to_unicode = str
-
-        if not os.path.exists('../storage/'):
-            os.makedirs('../storage/')
 
         attributes['documentName'] = name
 
@@ -23,6 +16,14 @@ class Document:
 
 
     def write(self):
+        try:
+            to_unicode = unicode
+        except NameError:
+            to_unicode = str
+
+        if not os.path.exists('../storage/'):
+            os.makedirs('../storage/')
+
         with io.open(self.filename, 'w', encoding='utf8') as outfile:
             str_ = json.dumps(self.attributes, indent=4, sort_keys=True,
                 separators=(',', ': '), ensure_ascii=False)
