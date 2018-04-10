@@ -29,6 +29,11 @@ class Document:
                 separators=(',', ': '), ensure_ascii=False)
             outfile.write(to_unicode(str_))
 
+    def read(self):
+        with open(self.filename) as data_file:
+            loaded = json.load(data_file)
+        print (loaded)
+
     def update(self, changes):
         for key, value in changes.items():
             self.attributes[key] = value
