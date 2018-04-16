@@ -4,6 +4,9 @@ import os
 
 class Document:
     """
+    The Document class is the basis for all data storage in the database.
+    Creating a document accepts a name and optionally a dictionary of
+    attributes and values and stores this data in a JSON object.
     """
     def __init__(self, name, attributes={}):
 
