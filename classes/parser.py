@@ -7,24 +7,25 @@ class Parser:
     """
     """
 
-    def __init__():
+    def __init__(self):
         self.path = 'storage/'
 
-    def parse(query):
-        queryType = parse[0].lower()
+    def parse(self, query):
+        query = query.strip().split()
+        queryType = query[0].lower()
 
         if queryType == 'select':
-            return find(query[1:])
+            return self.find(query[1:])
         elif queryType == 'update':
-            return update(query[1:])
+            return self.update(query[1:])
         elif queryType == 'delete':
-            return delete(query[1:])
+            return self.delete(query[1:])
         else:
             print('Not a supported query type')
 
-    def find(query):
+    def find(self, query):
         attributes = []
-        fpath = path
+        fpath = self.path
         conditions = []
         for i in range(len(query)):
             if query[i].lower() == '*':
@@ -42,6 +43,23 @@ class Parser:
                     i += 3
                     break
 
+        if fpath != self.path:
+            doc = json.load(open(fpath))
+            if doc['collection'] == '0':
+                attr = {}
+                for i in attributes:
+                    if i == '*':
+                        for j in doc.keys():
+                            attr[j] = doc[j]
+                    else:
+                        if i in doc.keys():
+                            attr[i] = doc[i]
+                print(str(attr))
+            elif doc['collection'] == '1':
+                pass
+
+
+
         # for j in range(i, len(query), 3):
         #     conditions.append([query[j], query[j+1], query[j+2]])
 
@@ -49,9 +67,9 @@ class Parser:
 
         print("[")
 
-        if fpath == path:
+        if fpath == self.path:
             for file in os.listdir(fpath):
-                values = document.read(file)
+                values = json.load(open(fpath + file))
                 attr = {}
                 for i in attributes:
                     if i == '*':
@@ -69,9 +87,21 @@ class Parser:
 
         return
 
-    def update():
+    def update(self, query):
         return
 
-    def delete():
+    def delete(self, query):
         return
+
+for file in os.listdir('storage/'):
+    test = json.load(open('storage/'+file))
+    attr = ['documentName']
+    for i in attr:
+        print i in test.keys()
+
+
+
+
+
+
 
