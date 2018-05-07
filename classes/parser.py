@@ -117,9 +117,56 @@ class Parser:
     def update(self, query):
         # will look same as create, for now we will just delete old and create new
         # update document (a 5, b 6, c hello)
+        docName = query[0]
+
+        fpath = self.path + docName
+
         return
 
     def delete(self, query):
         # delete from where syntax
         # or just delete document (DELETE a)
-        return
+
+        docName = query[1]
+        conditions = query[3:]
+        fpath = self.path
+
+        if docName == '*':
+            files = os.listdir(fpath)
+
+        else:
+            files = [docName + '.json']
+
+        print(files)
+
+        for file in files:
+            values = json.load(open(fpath + file))
+            expression = ''
+            for i in range(len(conditions)):
+                if i % 4 == 0:
+                    flag = 0
+                    try:
+                        x = values[conditions[i]]
+                        if isinstance(x, str):
+                            flag = 1
+                            expression += '\'' + str(values[conditions[i]]) + '\''
+                        else:
+                            expression += str(values[conditions[i]])
+                    except KeyError:
+                        expression = 'False'
+                        break
+                else:
+                    if conditions[i] == '=':
+                        expression += '=='
+                    elif (conditions[i] not in ['>', '<', '<=', '>=', 'and', 'or', '==', '!=']) and (flag == 1):
+                        expression += '\'' + str(conditions[i]) + '\''
+                    else:
+                        expression += str(conditions[i])
+                expression += ' '
+            print(expression)
+            try:
+                if eval(expression):
+                    print('removing')
+                    os.remove(self.path + values['documentName'] + '.json')
+            except SyntaxError:
+                print('Invalid expression for document: ' + values['documentName'])
