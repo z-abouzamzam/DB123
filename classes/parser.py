@@ -100,17 +100,58 @@ class Parser:
         # all special chars we parse as string
         # working on parsing
 
-        # query in form ['document', '(a', '5,', 'b', '4,', 'c', 'hello)']
+        # query in form ['document', 'a', ':', '5', 'b', '4', 'c', 'hello']
+
+        # Constraints on expression:
+        # only simple datatypes: string int float
+        # need space between colon and key values
+        # commas needed between multiple values
+
+        # example CREATE d a : 45, c : 2.2, f : hello
+
         docName = query[0]
 
-        i = 1
-        while(query[i + 1][-1] != ')'):
-            key = query[i]
-            try:
-                float(query[i + 1][:-1])
-            except ValueError:
-                pass
-            value = query[i + 1][:-1]
+        expression = '{' # + '\'documentName\': \''  + docName + '\''
+
+        for value in query[1:]:
+            addComma = 0
+            temp = value
+            if ',' in temp:
+                addComma = 1
+                temp = value.strip(',')
+
+            if temp != ':':
+                try:
+                    float(temp)
+                except ValueError:
+                    temp = '\'' + temp + '\''
+
+            expression += temp + (addComma * ',')
+
+        expression += '}'
+
+        if expression == '{}':
+            expression = 'dict()'
+
+        try:
+            attributes = eval(expression)
+            attributes = dict(attributes)
+        except:
+            print('Invalid expression! See guidelines for valid expression types')
+            return
+
+        s = document.Document(docName, attributes)
+
+        document.read(docName)
+
+        # i = 1
+        # while(query[i + 1][-1] != ')'):
+        #     key = query[i]
+        #     try:
+        #         float(query[i + 1][:-1])
+        #     except ValueError:
+        #         pass
+        #     value = query[i + 1][:-1]
 
 
 
@@ -131,13 +172,19 @@ class Parser:
         conditions = query[3:]
         fpath = self.path
 
+        # print(conditions)
+
         if docName == '*':
             files = os.listdir(fpath)
 
         else:
             files = [docName + '.json']
+            if len(conditions) == 0:
+                conditions = ['documentName', '=', docName]
 
-        print(files)
+        # print(conditions)
+        #
+        # print(files)
 
         for file in files:
             values = json.load(open(fpath + file))
