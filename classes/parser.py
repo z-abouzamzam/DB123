@@ -46,7 +46,12 @@ class Parser:
                     break
 
         if fpath != self.path:
-            doc = json.load(open(fpath + '.json'))
+            try:
+                doc = json.load(open(fpath + '.json'))
+            except FileNotFoundError as e:
+                print("Invalid Document name")
+                return
+
             if 'collection' not in doc.keys() or doc['collection'] == '0':
                 attr = {}
                 for i in attributes:
@@ -73,7 +78,13 @@ class Parser:
 
         if fpath == self.path:
             for file in os.listdir(fpath):
-                values = json.load(open(fpath + file))
+                if file == '.DS_Store':
+                    continue
+                try:
+                    values = json.load(open(fpath + file))
+                except FileNotFoundError as e:
+                    print("Invalid Document name")
+                    return
                 attr = {}
                 for i in attributes:
                     if i == '*':
@@ -111,7 +122,7 @@ class Parser:
 
         docName = query[0]
 
-        expression = '{' # + '\'documentName\': \''  + docName + '\''
+        expression = '{'
 
         for value in query[1:]:
             addComma = 0
@@ -142,27 +153,59 @@ class Parser:
 
         s = document.Document(docName, attributes)
 
-        document.read(docName)
-
-        # i = 1
-        # while(query[i + 1][-1] != ')'):
-        #     key = query[i]
-        #     try:
-        #         float(query[i + 1][:-1])
-        #     except ValueError:
-        #         pass
-        #     value = query[i + 1][:-1]
-
 
 
     def update(self, query):
         # will look same as create, for now we will just delete old and create new
-        # update document (a 5, b 6, c hello)
+        # update document (a : 5, b : 6, c : hello)
         docName = query[0]
 
-        fpath = self.path + docName
+        fpath = self.path + docName + '.json'
 
-        return
+        print(fpath)
+
+        try:
+            doc = json.load(open(fpath))
+        except FileNotFoundError as e:
+            print("Invalid Document name")
+            return
+
+        expression = '{'
+
+        for value in query[1:]:
+            addComma = 0
+            temp = value
+            if ',' in temp:
+                addComma = 1
+                temp = value.strip(',')
+
+            if temp != ':':
+                try:
+                    float(temp)
+                except ValueError:
+                    temp = '\'' + temp + '\''
+
+            expression += temp + (addComma * ',')
+
+        expression += '}'
+
+        if expression == '{}':
+            expression = 'dict()'
+
+        try:
+            attributes = eval(expression)
+            attributes = dict(attributes)
+        except:
+            print('Invalid expression! See guidelines for valid expression types')
+            return
+
+        for key in attributes.keys():
+            if attributes[key] == "None":
+                doc.pop(key)
+                continue
+            doc[key] = attributes[key]
+
+        s = document.Document(docName, doc)
 
     def delete(self, query):
         # delete from where syntax
@@ -187,7 +230,11 @@ class Parser:
         # print(files)
 
         for file in files:
-            values = json.load(open(fpath + file))
+            try:
+                values = json.load(open(fpath + file))
+            except FileNotFoundError as e:
+                print("Invalid Document name")
+                return
             expression = ''
             for i in range(len(conditions)):
                 if i % 4 == 0:
