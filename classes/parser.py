@@ -16,21 +16,28 @@ class Parser:
             queryType = query[0].lower()
         except IndexError:
             return
-        if queryType == 'select':
-            return self.find(query[1:])
-        elif queryType == 'create':
-            return self.create(query[1:])
-        elif queryType == 'update':
-            return self.update(query[1:])
-        elif queryType == 'delete':
-            return self.delete(query[1:])
-        else:
+        try:
+            if queryType == 'select':
+                return self.find(query[1:])
+            elif queryType == 'create':
+                return self.create(query[1:])
+            elif queryType == 'update':
+                return self.update(query[1:])
+            elif queryType == 'delete':
+                return self.delete(query[1:])
+            else:
+                print('Not a supported query type')
+        except IndexError:
             print('Not a supported query type')
 
     def find(self, query):
         attributes = []
         fpath = self.path
         conditions = []
+
+        if(len(query) == 0):
+            raise IndexError
+
         for i in range(len(query)):
             if query[i].lower() == '*':
                 attributes.append('*')
@@ -124,6 +131,14 @@ class Parser:
 
         docName = query[0]
 
+        try:
+            s = json.load(open(self.path + docName + '.json'))
+            print('Invalid query! Document ' + docName + ' already exists ')
+            return
+        except FileNotFoundError:
+            # print('dne')
+            pass
+
         expression = '{'
 
         for value in query[1:]:
@@ -172,7 +187,7 @@ class Parser:
 
         expression = '{'
         flag = 0
-        for value in query[1:]:
+        for value in query[2:]:
             addComma = 0
             temp = value
 
@@ -208,12 +223,15 @@ class Parser:
             return
 
         for key in attributes.keys():
+            if(key == 'documentName'):
+                continue
             if attributes[key] == "None":
-                doc.pop(key)
+                # doc.pop(key)
+                doc[key] = None
                 continue
             doc[key] = attributes[key]
 
-        s = document.Document(docName, doc)
+        s = document.Document(doc['documentName'], doc)
 
     def delete(self, query):
         # delete from where syntax

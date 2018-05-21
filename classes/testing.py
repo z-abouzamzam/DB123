@@ -6,7 +6,7 @@ if __name__ == "__main__":
     print("Welcome to DB123\n")
     while True:
         cmd = input('>>> ')
-        if(cmd == 'q'):
+        if(cmd.lower() == 'q' or cmd.lower() == 'quit'):
             exit()
         elif(cmd == '\n'):
             continue
