@@ -11,9 +11,11 @@ class Parser:
         self.path = 'storage/'
 
     def parse(self, query):
-        query = query.strip().split()
-        queryType = query[0].lower()
-
+        try:
+            query = query.strip().split()
+            queryType = query[0].lower()
+        except IndexError:
+            return
         if queryType == 'select':
             return self.find(query[1:])
         elif queryType == 'create':
@@ -162,8 +164,6 @@ class Parser:
 
         fpath = self.path + docName + '.json'
 
-        print(fpath)
-
         try:
             doc = json.load(open(fpath))
         except FileNotFoundError as e:
@@ -171,23 +171,31 @@ class Parser:
             return
 
         expression = '{'
-
+        flag = 0
         for value in query[1:]:
             addComma = 0
             temp = value
+
+            if temp == ':':
+                flag = 1
             if ',' in temp:
                 addComma = 1
                 temp = value.strip(',')
+                flag = 0
 
-            if temp != ':':
+            if flag and temp in doc.keys():
+                temp = doc[temp]
+
+            if temp not in [':', '+', '-', '*', '/', '(', ')']:
                 try:
                     float(temp)
                 except ValueError:
                     temp = '\'' + temp + '\''
 
-            expression += temp + (addComma * ',')
+            expression += str(temp) + (addComma * ',')
 
         expression += '}'
+        print(expression)
 
         if expression == '{}':
             expression = 'dict()'
@@ -215,8 +223,6 @@ class Parser:
         conditions = query[3:]
         fpath = self.path
 
-        # print(conditions)
-
         if docName == '*':
             files = os.listdir(fpath)
 
@@ -224,10 +230,6 @@ class Parser:
             files = [docName + '.json']
             if len(conditions) == 0:
                 conditions = ['documentName', '=', docName]
-
-        # print(conditions)
-        #
-        # print(files)
 
         for file in files:
             try:

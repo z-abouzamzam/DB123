@@ -8,4 +8,6 @@ if __name__ == "__main__":
         cmd = input('>>> ')
         if(cmd == 'q'):
             exit()
+        elif(cmd == '\n'):
+            continue
         p.parse(cmd)
