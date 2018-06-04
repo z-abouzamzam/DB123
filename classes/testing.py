@@ -1,4 +1,5 @@
 import document
+import readline
 from parser import *
 
 if __name__ == "__main__":

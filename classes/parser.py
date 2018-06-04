@@ -152,7 +152,10 @@ class Parser:
                 try:
                     float(temp)
                 except ValueError:
-                    temp = '\'' + temp + '\''
+                    if temp not in ['{', '}', '},', '[', ']', '],']:
+                        temp = '\'' + temp + '\''
+                    else:
+                        temp = ' ' + temp + ' '
 
             expression += temp + (addComma * ',')
 
