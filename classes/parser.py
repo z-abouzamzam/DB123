@@ -64,6 +64,15 @@ class Parser:
             if 'collection' not in doc.keys() or doc['collection'] == '0':
                 attr = {}
                 for i in attributes:
+                    if '.' in i:
+                        # if it's a number do nothing
+                        try:
+                            float(i)
+                        except ValueError:
+                            x = i.split('.')
+                            attr[i] = doc[x[0]][x[1]]
+                            continue
+
                     if i == '*':
                         for j in doc.keys():
                             attr[j] = doc[j]
@@ -95,7 +104,22 @@ class Parser:
                     print("Invalid Document name")
                     return
                 attr = {}
+                # print(values['documentName'])
                 for i in attributes:
+                    if '.' in i:
+                        # if it's a number do nothing
+                        try:
+                            float(i)
+                        except ValueError:
+                            x = i.split('.')
+                            try:
+                                attr[i] = values[x[0]][x[1]]
+                            except TypeError:
+                                pass
+                            except KeyError:
+                                pass
+                            continue
+
                     if i == '*':
                         for j in values.keys():
                             attr[j] = values[j]
