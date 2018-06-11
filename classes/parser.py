@@ -81,6 +81,9 @@ class Parser:
                     i += 3
                     break
 
+
+
+
         # here we have a specific document we are selecting from, so we try
         # to open it and get the attributes
         if fpath != self.path:
@@ -128,8 +131,61 @@ class Parser:
                         if i in doc.keys():
                             attr[i] = doc[i]
 
+                # now check to see if where clause is met
+                whereidx = -1
+                try:
+                    whereidx = query.index('where')
+                    # print(whereidx)
+                # if no where clause, we can simply print out our expression
+                except ValueError:
+                    try:
+                        whereidx = query.index('WHERE')
+                        # print(whereidx)
+                    except ValueError:
+                        print(str(attr))
+                        return
+
+                conditions = query[whereidx + 1:]
+                # print(conditions)
+                expression = ''
+
+                # this uses the same logic as in delete to parse expressions
+                for i in range(len(conditions)):
+                    if i % 4 == 0:
+                        flag = 0
+                        try:
+                            # Check if the value for the condition of deletion is a
+                            # value which exists in the document, if not we know we
+                            # are not deleting the document as part of the conditions
+                            # cannot be met so we set our expression to False and move
+                            # to the next document.
+                            x = doc[conditions[i]]
+                            if isinstance(x, str):
+                                flag = 1
+                                expression += '\'' + str(doc[conditions[i]]) + '\''
+                            else:
+                                expression += str(doc[conditions[i]])
+                        except KeyError:
+                            expression = 'False'
+                            break
+                    else:
+                        # Translate regular equality to Python equality
+                        if conditions[i] == '=':
+                            expression += '=='
+                        # As before if we are not looking at a comparison operator
+                        elif (conditions[i] not in ['>', '<', '<=', '>=', 'and', 'or', '==', '!=']) and (flag == 1):
+                            expression += '\'' + str(conditions[i]) + '\''
+                        else:
+                            expression += str(conditions[i])
+                    expression += ' '
+                try:
+                    if eval(expression):
+                        print(str(attr))
+                except SyntaxError:
+                    print('Invalid expression for document: ' + doc['documentName'])
+
                 # now we can just print out the attributes that we have gotten
-                print(str(attr))
+                # print(str(attr))
             elif doc['collection'] == '1':
                 pass
 
@@ -174,9 +230,67 @@ class Parser:
                     else:
                         if i in values.keys():
                             attr[i] = values[i]
-                # finally print the attributes for each document found
-                if attr != {}:
-                    print(values['documentName'] + " : " + str(attr))
+
+                # same exact check as above to see if where clause is met
+                # (I know, this can be much simpler, will update this repeated
+                # code in the future, but for now, if it ain't broke, don't
+                # fix it.)
+                whereidx = -1
+                try:
+                    whereidx = query.index('where')
+                    # print(whereidx)
+                # if no where clause, we can simply print out our expression
+                except ValueError:
+                    try:
+                        whereidx = query.index('WHERE')
+                        # print(whereidx)
+                    except ValueError:
+                        if attr != {}:
+                            print(values['documentName'] + " : " + str(attr))
+
+                conditions = query[whereidx + 1:]
+                # print(conditions)
+                expression = ''
+
+                # this uses the same logic as above to parse expressions
+                for i in range(len(conditions)):
+                    if i % 4 == 0:
+                        flag = 0
+                        try:
+                            # Check if the value for the condition of deletion is a
+                            # value which exists in the document, if not we know we
+                            # are not deleting the document as part of the conditions
+                            # cannot be met so we set our expression to False and move
+                            # to the next document.
+                            x = values[conditions[i]]
+                            if isinstance(x, str):
+                                flag = 1
+                                expression += '\'' + str(values[conditions[i]]) + '\''
+                            else:
+                                expression += str(values[conditions[i]])
+                        except KeyError:
+                            expression = 'False'
+                            break
+                    else:
+                        # Translate regular equality to Python equality
+                        if conditions[i] == '=':
+                            expression += '=='
+                        # As before if we are not looking at a comparison operator
+                        elif (conditions[i] not in ['>', '<', '<=', '>=', 'and', 'or', '==', '!=']) and (flag == 1):
+                            expression += '\'' + str(conditions[i]) + '\''
+                        else:
+                            expression += str(conditions[i])
+                    expression += ' '
+                try:
+                    if eval(expression):
+                        # finally print the attributes for each document found
+                        if attr != {}:
+                            print(values['documentName'] + " : " + str(attr))
+                except SyntaxError:
+                    print('Invalid expression for document: ' + values['documentName'])
+                except TypeError:
+                    pass
+
         return
 
     def create(self, query):
