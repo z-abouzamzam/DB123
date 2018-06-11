@@ -66,13 +66,13 @@ class Parser:
         # get the document that we are selecting from, and the corresponding
         # attributes that we want to select
         for i in range(len(query)):
-            if query[i].lower() == '*':
+            if query[i].strip(',').lower() == '*':
                 attributes.append('*')
 
-            if query[i].lower() != 'from':
-                attributes.append(query[i])
+            if query[i].strip(',').lower() != 'from':
+                attributes.append(query[i].strip(','))
 
-            elif query[i].lower() == 'from':
+            elif query[i].strip(',').lower() == 'from':
                 if query[i+1].lower() == '*':
                     i += 3
                     break
@@ -80,7 +80,7 @@ class Parser:
                     fpath += query[i+1]
                     i += 3
                     break
-
+        # print(attributes)
 
 
 
@@ -427,7 +427,7 @@ class Parser:
             expression += str(temp) + (addComma * ',')
 
         expression += '}'
-        print(expression)
+        # print(expression)
 
         # Handle case of empty update
         if expression == '{}':
@@ -526,10 +526,10 @@ class Parser:
                     else:
                         expression += str(conditions[i])
                 expression += ' '
-            print(expression)
+            # print(expression)
             try:
                 if eval(expression):
-                    print('removing')
+                    # print('removing')
                     os.remove(self.path + values['documentName'] + '.json')
             except SyntaxError:
                 print('Invalid expression for document: ' + values['documentName'])
