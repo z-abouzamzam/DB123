@@ -21,7 +21,12 @@ so be sure to follow the syntax **exactly** as it is listed here, or else your
 queries may be unsuccessful.
 
 Notes to keep in mind. Strings do not go in quotes, and in general, there should
-be spaces between all symbols except commas.
+be spaces between all symbols except commas. This is especially important for
+nested documents and attributes which correspond to dictionaries or lists. For
+example an attribute a corresponding to a dictionary and an attribute b corresponding
+to a list should be formatted as such:
+
+`CREATE document a : { b : 1, d : five }, b : [ 0, 1, 2, 3 ]`
 
 
 ### Creation
